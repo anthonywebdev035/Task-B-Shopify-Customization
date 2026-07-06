@@ -1,5 +1,5 @@
 Preview Link: https://apptesting-h59jucfi.myshopify.com/products/the-multi-managed-snowboard
-**STORE PASSWORD = 1234**
+<br>**STORE PASSWORD = 1234**
 
 This covers two custom sections located in `/sections/`:
 
