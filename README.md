@@ -1,9 +1,12 @@
+Preview Link: https://apptesting-h59jucfi.myshopify.com/products/the-multi-managed-snowboard
+**STORE PASSWORD = 1234**
+
 This covers two custom sections located in `/sections/`:
 
 1. Product Hgihlights
 2. Custom Carousel / Verified Reviews
 
-"" STORE PASSWORD = 1234 "" 
+
 
 Both sections pull data from **product metafields**, so they only render fully once those metafields are created and populated in Shopify Admin. Below is what to set up for each.
 
