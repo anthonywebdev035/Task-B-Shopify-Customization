@@ -1,0 +1,512 @@
+{%- liquid
+  assign accent = section.settings.accent_color
+  assign ink = section.settings.ink_color
+  assign layout_style = section.settings.layout_style
+  assign show_materials = section.settings.show_materials_panel
+  assign materials_metafield = product.metafields.custom.material_composition
+-%}
+
+<section
+  class="ph ph--{{ layout_style }}"
+  id="{{ section.id }}"
+  style="--ph-accent: {{ accent }}; --ph-ink: {{ ink }};"
+>
+  <div class="ph__inner page-width">
+
+    <div class="ph__intro">
+      {%- if section.settings.eyebrow != blank -%}
+        <p class="ph__eyebrow">{{ section.settings.eyebrow }}</p>
+      {%- endif -%}
+      {%- if section.settings.heading != blank -%}
+        <h2 class="ph__heading">{{ section.settings.heading }}</h2>
+      {%- endif -%}
+    </div>
+
+    <div class="ph__grid">
+
+      {%- if section.blocks.size > 0 -%}
+        <ul class="ph__ledger" role="list">
+          {%- for block in section.blocks -%}
+            {%- case block.type -%}
+              {%- when 'highlight' -%}
+                <li class="ph__entry" data-ph-reveal {{ block.shopify_attributes }}>
+                  <span class="ph__entry-num">{{ forloop.index | prepend: '00' | slice: -2, 2 }}</span>
+                  <span class="ph__entry-body">
+                    {%- if block.settings.title != blank -%}
+                      <span class="ph__entry-title">{{ block.settings.title }}</span>
+                    {%- endif -%}
+                    {%- if block.settings.description != blank -%}
+                      <span class="ph__entry-desc">{{ block.settings.description }}</span>
+                    {%- endif -%}
+                  </span>
+                </li>
+            {%- endcase -%}
+          {%- endfor -%}
+        </ul>
+      {%- endif -%}
+
+      {%- if show_materials and materials_metafield != blank -%}
+        <div class="ph__cert" data-ph-reveal>
+          <div class="ph__cert-seal" aria-hidden="true">
+            <svg viewBox="0 0 48 48" width="40" height="40">
+              <circle cx="24" cy="24" r="21" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="2 3"/>
+              <circle cx="24" cy="24" r="15" fill="none" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M24 14v20M14 24h20" stroke="currentColor" stroke-width="1.5"/>
+            </svg>
+          </div>
+
+          <button
+            type="button"
+            class="ph__cert-toggle"
+            aria-expanded="false"
+            aria-controls="materials-panel-{{ section.id }}"
+            data-materials-toggle
+          >
+            <span class="ph__cert-label">{{ section.settings.materials_label | default: 'Materials & Care' }}</span>
+            <span class="ph__cert-hint" data-toggle-hint>view details</span>
+          </button>
+
+          <div
+            id="materials-panel-{{ section.id }}"
+            class="ph__cert-panel"
+            data-materials-panel
+            hidden
+          >
+            <div class="ph__cert-panel-inner">
+              {{ materials_metafield | metafield_tag }}
+            </div>
+          </div>
+
+          <div class="ph__cert-perf" aria-hidden="true"></div>
+        </div>
+      {%- endif -%}
+
+    </div>
+  </div>
+</section>
+
+<style>
+  #{{ section.id }} {
+    --ph-paper: {{ section.settings.background_color | default: '#FBF8F2' }};
+    --ph-line: #D8CFBE;
+    --ph-accent-soft: color-mix(in srgb, var(--ph-accent) 18%, var(--ph-paper));
+    background: var(--ph-paper);
+    color: var(--ph-ink);
+    padding: {{ section.settings.padding_top | default: 64 }}px 0 {{ section.settings.padding_bottom | default: 64 }}px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  /* Optional display/mono pairing. Remove this @import and the font-family
+     rules below if the theme already defines a type system to inherit instead. */
+  #{{ section.id }} {
+    --ph-font-display: "Fraunces", Georgia, serif;
+    --ph-font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, monospace;
+  }
+
+  @media (prefers-reduced-data: no-preference) {
+    @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=IBM+Plex+Mono:wght@500&display=swap');
+  }
+
+  #{{ section.id }} .ph__inner {
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+  }
+
+  #{{ section.id }} .ph__eyebrow {
+    font-family: var(--ph-font-mono);
+    font-size: {{ section.settings.eyebrow_size }}px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ph-accent);
+    margin: 0 0 0.6rem;
+  }
+
+  #{{ section.id }} .ph__heading {
+    font-family: var(--ph-font-display);
+    font-weight: 600;
+    font-size: {{ section.settings.heading_size }}px;
+    line-height: 1.15;
+    margin: 0;
+    max-width: 26ch;
+  }
+
+  #{{ section.id }} .ph__grid {
+    display: grid;
+    gap: 2.5rem;
+    grid-template-columns: 1fr;
+  }
+
+  #{{ section.id }}.ph--grid .ph__grid {
+    grid-template-columns: 1.1fr 0.9fr;
+    align-items: start;
+  }
+
+  /* ---- Ledger (highlights list) ---- */
+
+  #{{ section.id }} .ph__ledger {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--ph-line);
+  }
+
+  #{{ section.id }} .ph__entry {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--ph-line);
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+  }
+
+  #{{ section.id }} .ph__entry.is-visible {
+    opacity: 1;
+    transform: none;
+  }
+
+  #{{ section.id }} .ph__entry-num {
+    font-family: var(--ph-font-mono);
+    font-size: {{ section.settings.description_size }}px;
+    color: var(--ph-accent);
+    flex: none;
+    width: 1.6rem;
+  }
+
+  #{{ section.id }} .ph__entry-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+
+  #{{ section.id }} .ph__entry-title {
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    font-size: {{ section.settings.title_size }}px;
+  }
+
+  #{{ section.id }} .ph__entry-desc {
+    font-size: 0.88rem;
+    opacity: 0.75;
+    max-width: 46ch;
+    font-size: {{ section.settings.description_size }}px;
+  }
+
+  /* ---- Certificate card (materials metafield) ---- */
+
+  #{{ section.id }} .ph__cert {
+    position: relative;
+    background: var(--ph-accent-soft);
+    border: 1px dashed var(--ph-accent);
+    border-radius: 2px;
+    padding: 1.75rem 1.5rem 1.5rem;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.5s ease 0.1s, transform 0.5s ease 0.1s;
+  }
+
+  #{{ section.id }} .ph__cert.is-visible {
+    opacity: 1;
+    transform: none;
+  }
+
+  #{{ section.id }} .ph__cert-seal {
+    position: absolute;
+    top: -20px;
+    right: 1.5rem;
+    color: var(--ph-accent);
+    background: var(--ph-paper);
+    border-radius: 50%;
+    padding: 2px;
+    transition: transform 0.4s ease;
+  }
+
+  #{{ section.id }} .ph__cert-toggle[aria-expanded="true"] ~ .ph__cert-seal,
+  #{{ section.id }} .ph__cert-seal.is-open {
+    transform: rotate(28deg);
+  }
+
+  #{{ section.id }} .ph__cert-toggle {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    width: 100%;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font: inherit;
+    color: inherit;
+    padding: 0;
+  }
+
+  #{{ section.id }} .ph__cert-label {
+    font-family: var(--ph-font-display);
+    font-weight: 600;
+    font-size: {{ section.settings.title_size }}px;
+  }
+
+  #{{ section.id }} .ph__cert-hint {
+    font-family: var(--ph-font-mono);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ph-accent);
+    white-space: nowrap;
+  }
+
+  #{{ section.id }} .ph__cert-toggle[aria-expanded="true"] .ph__cert-hint {
+    display: none;
+  }
+
+  #{{ section.id }} .ph__cert-panel {
+    overflow: hidden;
+  }
+
+  #{{ section.id }} .ph__cert-panel-inner {
+    padding-top: 0.9rem;
+    font-size: {{ section.settings.description_size }}px;
+    line-height: 1.6;
+  }
+
+  #{{ section.id }} .ph__cert-perf {
+    position: absolute;
+    left: -6px;
+    top: 12px;
+    bottom: 12px;
+    width: 1px;
+    background-image: radial-gradient(circle, var(--ph-paper) 2px, transparent 2.5px);
+    background-size: 1px 10px;
+    background-repeat: repeat-y;
+  }
+
+  @media (max-width: 749px) {
+    #{{ section.id }}.ph--grid .ph__grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* Keyboard focus visibility, kept distinct from hover states */
+  #{{ section.id }} .ph__cert-toggle:focus-visible {
+    outline: 2px solid var(--ph-accent);
+    outline-offset: 4px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    #{{ section.id }} .ph__entry,
+    #{{ section.id }} .ph__cert {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+    #{{ section.id }} .ph__cert-seal {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  (function () {
+    var root = document.getElementById('{{ section.id }}');
+    if (!root) return;
+
+    var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // --- Accessible expand/collapse for the materials certificate panel ---
+    var toggleBtn = root.querySelector('[data-materials-toggle]');
+    var panel = root.querySelector('[data-materials-panel]');
+    var seal = root.querySelector('.ph__cert-seal');
+
+    if (toggleBtn && panel) {
+      toggleBtn.addEventListener('click', function () {
+        var isOpen = toggleBtn.getAttribute('aria-expanded') === 'true';
+        toggleBtn.setAttribute('aria-expanded', String(!isOpen));
+        panel.hidden = isOpen;
+        if (seal) seal.classList.toggle('is-open', !isOpen);
+      });
+    }
+
+    // --- Staggered scroll reveal for ledger entries + certificate card ---
+    var revealTargets = root.querySelectorAll('[data-ph-reveal]');
+    if (!revealTargets.length) return;
+
+    if (reduceMotion || !('IntersectionObserver' in window)) {
+      revealTargets.forEach(function (el) { el.classList.add('is-visible'); });
+      return;
+    }
+
+    var observer = new IntersectionObserver(
+      function (entries) {
+        entries.forEach(function (entry, i) {
+          if (entry.isIntersecting) {
+            setTimeout(function () {
+              entry.target.classList.add('is-visible');
+            }, i * 70);
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.2 }
+    );
+
+    revealTargets.forEach(function (el) { observer.observe(el); });
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Product Highlights",
+  "tag": "section",
+  "class": "shopify-section--product-highlights",
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow label",
+      "default": "Sourced & Verified"
+    },
+    {
+      "type": "range",
+      "id": "eyebrow_size",
+      "min": 12,
+      "max": 30,
+      "step": 2,
+      "unit": "px",
+      "label": "Eyebrow Size",
+      "default": 12
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "What goes into it"
+    },
+    {
+      "type": "range",
+      "id": "heading_size",
+      "min": 30,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "label": "Heading Size",
+      "default": 38
+    },
+    {
+      "type": "select",
+      "id": "layout_style",
+      "label": "Layout style",
+      "options": [
+        { "value": "grid", "label": "Two column (ledger + certificate)" },
+        { "value": "stacked", "label": "Stacked (single column)" }
+      ],
+      "default": "grid"
+    },
+    {
+      "type": "color",
+      "id": "accent_color",
+      "label": "Accent color",
+      "default": "#B9862F"
+    },
+    {
+      "type": "color",
+      "id": "ink_color",
+      "label": "Text color",
+      "default": "#1C2B22"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background color",
+      "default": "#FBF8F2"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_materials_panel",
+      "label": "Show Materials & Care panel",
+      "info": "Reads from the product's material_composition metafield",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Panels Settings"
+    },
+    {
+      "type": "range",
+      "id": "title_size",
+      "min": 16,
+      "max": 30,
+      "step": 2,
+      "unit": "px",
+      "label": "Title Size",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "description_size",
+      "min": 8,
+      "max": 30,
+      "step": 2,
+      "unit": "px",
+      "label": "Description Size",
+      "default": 8
+    },
+    {
+      "type": "text",
+      "id": "materials_label",
+      "label": "Materials panel label",
+      "default": "Materials & Care"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Top padding",
+      "default": 64
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Bottom padding",
+      "default": 64
+    }
+  ],
+  "blocks": [
+    {
+      "type": "highlight",
+      "name": "Features",
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title",
+          "default": "Feature title"
+        },
+        {
+          "type": "textarea",
+          "id": "description",
+          "label": "Description"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Product Highlights",
+      "blocks": [
+        { "type": "highlight" },
+        { "type": "highlight" },
+        { "type": "highlight" }
+      ]
+    }
+  ]
+}
+{% endschema %}
